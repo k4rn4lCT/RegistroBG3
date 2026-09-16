@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de campaña — Baldur's Gate 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --vellum:#EFE7D6;
+  --panel:#F7F2E7;
+  --ink:#241C2E;
+  --ink-soft:#5A4F63;
+  --line:#D6C9AE;
+  --amethyst:#6B4C8F;
+  --verdigris:#2F7267;
+  --ember:#8C3B2E;
+  --bg:var(--vellum);
+  --shadow:0 1px 0 rgba(36,28,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --vellum:#15121B;
+    --panel:#1E1927;
+    --ink:#E9E1D0;
+    --ink-soft:#A79BB4;
+    --line:#332A42;
+    --amethyst:#B79BE0;
+    --verdigris:#6FC3B2;
+    --ember:#E08A6F;
+    --bg:var(--vellum);
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --vellum:#15121B; --panel:#1E1927; --ink:#E9E1D0; --ink-soft:#A79BB4;
+  --line:#332A42; --amethyst:#B79BE0; --verdigris:#6FC3B2; --ember:#E08A6F;
+  --bg:var(--vellum); --shadow:none;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:Karla, "Helvetica Neue", Arial, sans-serif;
+  font-size:16px; line-height:1.5;
+}
+h1,h2,h3{font-family:Fraunces, Georgia, "Times New Roman", serif; font-weight:600; margin:0;}
+h1{font-size:1.9rem; letter-spacing:-.01em}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:.4rem 0}
+a{color:var(--amethyst)}
+.wrap{max-width:1100px; margin:0 auto; padding:20px 16px 80px}
+
+header.top{display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; justify-content:space-between; padding-bottom:14px; border-bottom:2px solid var(--line)}
+.title-block{min-width:0}
+.title-block input{font-family:Fraunces,Georgia,serif; font-size:1.9rem; font-weight:600}
+.meta{color:var(--ink-soft); font-size:.9rem; margin-top:2px}
+.badge{display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:.8rem; color:var(--ink-soft); background:var(--panel)}
+.badge.warn{border-color:var(--ember); color:var(--ember)}
+
+nav.tabs{display:flex; gap:4px; overflow-x:auto; margin:16px 0 22px; padding-bottom:4px; -webkit-overflow-scrolling:touch}
+nav.tabs button{
+  flex:0 0 auto; background:none; border:none; border-bottom:2px solid transparent;
+  color:var(--ink-soft); font-family:inherit; font-size:.95rem; padding:8px 12px; cursor:pointer; white-space:nowrap;
+}
+nav.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--amethyst); font-weight:700}
+nav.tabs button:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{outline:2px solid var(--amethyst); outline-offset:2px}
+
+input, textarea, select{
+  font-family:inherit; font-size:1rem; color:var(--ink); background:transparent;
+  border:none; border-bottom:1px dashed var(--line); width:100%; padding:4px 2px; border-radius:0;
+}
+textarea{border:1px solid var(--line); border-radius:6px; padding:8px; resize:vertical; min-height:70px; background:var(--panel); line-height:1.5}
+select{border:1px solid var(--line); border-radius:6px; padding:5px; background:var(--panel); width:auto}
+input::placeholder, textarea::placeholder{color:var(--ink-soft); opacity:.7}
+label{display:block; font-size:.78rem; color:var(--ink-soft); margin-bottom:1px}
+.field{margin-bottom:12px}
+
+.card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; box-shadow:var(--shadow); margin-bottom:16px}
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+.row{display:flex; gap:10px; align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spread{display:flex; justify-content:space-between; align-items:center; gap:10px}
+
+.btn{
+  font-family:inherit; font-size:.88rem; color:var(--ink); background:var(--panel);
+  border:1px solid var(--line); border-radius:6px; padding:6px 12px; cursor:pointer;
+}
+.btn:hover{border-color:var(--amethyst)}
+.btn.primary{background:var(--amethyst); border-color:var(--amethyst); color:#fff}
+.btn.ghost{border-style:dashed; color:var(--ink-soft)}
+.btn.tiny{padding:2px 8px; font-size:.78rem}
+.btn.del{color:var(--ember); border-color:transparent; background:none; padding:2px 6px}
+
+.hero{border-left:4px solid var(--verdigris)}
+.hero dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:0}
+.hero dt{color:var(--ink-soft); font-size:.85rem}
+.hero dd{margin:0}
+
+.pc{border-top:3px solid var(--amethyst)}
+.pc header{display:flex; gap:10px; align-items:baseline; justify-content:space-between}
+.pc .who{font-family:Fraunces,Georgia,serif; font-size:1.15rem; font-weight:600}
+.pc .role{color:var(--ink-soft); font-size:.85rem}
+.lvl{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; padding:2px 6px; background:var(--bg)}
+.lvl b{font-variant-numeric:tabular-nums; min-width:1.6em; text-align:center}
+.lvl button{border:none; background:none; color:var(--ink-soft); font-size:1.1rem; cursor:pointer; line-height:1; padding:0 4px}
+
+.stats{display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin:14px 0}
+.stat{text-align:center}
+.stat label{font-size:.7rem; text-align:center; margin-bottom:3px}
+.stat input{text-align:center; border:1px solid var(--line); border-radius:6px; padding:5px 2px; background:var(--bg)}
+
+.lvlnote{display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:start; padding:8px 0; border-top:1px dotted var(--line)}
+.lvlnote .n{font-family:Fraunces,Georgia,serif; color:var(--verdigris); font-size:.95rem; padding-top:8px; white-space:nowrap}
+
+.item{display:grid; grid-template-columns:1fr auto; gap:8px; padding:10px 0; border-top:1px dotted var(--line)}
+.item:first-of-type{border-top:none}
+.item .lines{display:grid; gap:6px}
+.sub{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.sub > *{flex:1 1 140px}
+.tag{font-size:.75rem; border:1px solid var(--line); border-radius:4px; padding:1px 7px; color:var(--ink-soft)}
+.tag.on{border-color:var(--verdigris); color:var(--verdigris)}
+.tag.keep{border-color:var(--ember); color:var(--ember)}
+.empty{color:var(--ink-soft); font-size:.92rem; padding:6px 0}
+.strike{text-decoration:line-through; opacity:.55}
+.save{position:fixed; bottom:12px; right:12px; font-size:.78rem; color:var(--ink-soft); background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:4px 12px; opacity:0; transition:opacity .25s}
+.save.show{opacity:1}
+hr{border:none; border-top:1px solid var(--line); margin:16px 0}
+.mini{font-size:.85rem; color:var(--ink-soft)}
+@media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title-block">
+      <input id="campTitle" data-path="campaign.titulo" aria-label="Nombre de la campaña" value="">
+      <div class="meta" id="metaLine"></div>
+    </div>
+    <div class="row">
+      <span class="badge" id="daysBadge"></span>
+      <button class="btn tiny" id="themeBtn" title="Cambiar tema">◐</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+<div class="save" id="saveNote">Guardado</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- estado inicial ---------------- */
+const nuevoId = () => Math.random().toString(36).slice(2,9);
+
+const ESTADO_BASE = {
+  campaign:{
+    titulo:"Campaña Baldur's Gate 3",
+    acto:"1", zona:"Playa / Bosque Esmeralda",
+    objetivo:"Crear el Druida y salir de la nave nautiloide.",
+    proximo:"Llegar al Bosque Esmeralda y reclutar al grupo.",
+    dificultad:"Equilibrado",
+    notas:""
+  },
+  chars:[
+    {id:nuevoId(), nombre:"Mi Druida", jugador:"Personaje propio", raza:"Elfo de los Bosques",
+     clase:"Druida", nivel:1,
+     stats:{fue:10,des:14,con:16,int:8,sab:16,car:10},
+     buscar:"Amuleto de Gran Salud, armaduras de cuero mágicas, objetos que suban Sabiduría"},
+    {id:nuevoId(), nombre:"Wyll", jugador:"Compañero (reclase con Withers)", raza:"Humano",
+     clase:"Bardo", nivel:1,
+     stats:{fue:10,des:12,con:14,int:10,sab:8,car:16},
+     buscar:"Instrumentos, objetos que suban Carisma"},
+    {id:nuevoId(), nombre:"Astarion", jugador:"Compañero", raza:"Elfo superior (vampiro espontáneo)",
+     clase:"Pícaro", nivel:1,
+     stats:{fue:8,des:17,con:12,int:10,sab:12,car:10},
+     buscar:"Dos ballestas de mano, herramientas de ladrón, objetos de Destreza"},
+    {id:nuevoId(), nombre:"Lae'zel", jugador:"Compañera (reclase con Withers)", raza:"Githyanki",
+     clase:"Monje", nivel:1,
+     stats:{fue:10,des:17,con:14,int:8,sab:13,car:8},
+     buscar:"Guantes de monje, objetos de Destreza y Sabiduría"}
+  ],
+  quests:[
+    {id:nuevoId(), titulo:"Quitarse el parásito de la cabeza", estado:"activa", acto:"1", nota:"Misión principal."}
+  ],
+  decisions:[],
+  items:[],
+  log:[]
+};
+
+const ESTADOS_MISION = ["activa","pendiente","en pausa","completada"];
+const ESTADOS_OBJETO = ["buscar","guardado","equipado","no vender","vendible"];
+
+let S = null;
+let tab = "estado";
+
+/* ---------------- guardado ---------------- */
+const CLAVE = "bg3-campania-v1";
+let db = null, saveTimer = null;
+
+function avisarGuardado(txt){
+  const n = document.getElementById("saveNote");
+  n.textContent = txt || "Guardado";
+  n.classList.add("show");
+  clearTimeout(n._t); n._t = setTimeout(()=>n.classList.remove("show"), 1400);
+}
+
+function guardar(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    const ahora = new Date().toISOString();
+    const json = JSON.stringify(S);
+    try{ localStorage.setItem(CLAVE, JSON.stringify({json:json, actualizado:ahora})); }catch(e){}
+    if(db){
+      try{ await db.doc("campaign/state").set({json:json, actualizado:ahora}); }
+      catch(e){ avisarGuardado("Guardado solo en este navegador"); return; }
+    }
+    avisarGuardado();
+  }, 700);
+}
+
+async function cargar(){
+  let local = null, localTs = null;
+  try{
+    const raw = localStorage.getItem(CLAVE);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.json){ local = JSON.parse(parsed.json); localTs = parsed.actualizado || null; }
+      else if(parsed && parsed.chars){ local = parsed; } // copia local de una versión anterior, sin fecha
+    }
+  }catch(e){}
+
+  let remote = null, remoteTs = null;
+  try{
+    db = await claude.use("db");
+    if(db){
+      const snap = await db.doc("campaign/state").get();
+      if(snap.exists && snap.data() && snap.data().json){
+        remote = JSON.parse(snap.data().json);
+        remoteTs = snap.data().actualizado || null;
+      }
+    }
+  }catch(e){ db = null; }
+
+  if(remote && local){
+    if(localTs && remoteTs){
+      S = (new Date(localTs) > new Date(remoteTs)) ? local : remote;
+    } else {
+      S = remote; // sin una de las dos fechas, no podemos comparar: preferimos el remoto
+    }
+  } else {
+    S = remote || local || ESTADO_BASE;
+  }
+
+  render();
+  guardar(); // deja la versión ganadora guardada en ambos lados
+}
+
+/* ---------------- utilidades ---------------- */
+function porRuta(path){
+  const p = path.split(".");
+  let o = S;
+  for(let i=0;i<p.length-1;i++) o = Array.isArray(o) ? o[+p[i]] : o[p[i]];
+  return [o, p[p.length-1]];
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function hoy(){ return new Date().toISOString().slice(0,10); }
+function diasDesde(fecha){
+  if(!fecha) return null;
+  const d = Math.floor((Date.now() - new Date(fecha+"T12:00:00").getTime())/86400000);
+  return isNaN(d) ? null : d;
+}
+function ultimaSesion(){ return S.log.length ? S.log[0].fecha : null; }
+
+function emojiClase(clase){
+  const c = (clase||"").toLowerCase();
+  if(c.includes("druid")) return "🌿";
+  if(c.includes("bardo")) return "🎵";
+  if(c.includes("pícaro") || c.includes("picaro") || c.includes("rogue")) return "🏹";
+  if(c.includes("monje")) return "👊";
+  if(c.includes("guerrero") || c.includes("fighter")) return "⚔️";
+  if(c.includes("mago") || c.includes("wizard")) return "🔮";
+  if(c.includes("clérigo") || c.includes("clerigo") || c.includes("cleric")) return "✨";
+  return "•";
+}
+
+function generarTextoIA(){
+  const c = S.campaign;
+  const grupo = S.chars.map(ch => `${emojiClase(ch.clase)} ${ch.nombre} — nivel ${ch.nivel} — ${ch.clase}`).join("\n");
+  const misiones = S.quests.filter(q=>q.estado!=="completada");
+  const misionesTxt = misiones.length
+    ? misiones.map(q=>`- ${q.titulo||"(sin título)"} — ${q.estado}${q.nota ? " — próximo paso: "+q.nota : ""}`).join("\n")
+    : "- Ninguna anotada";
+  const decisionesTxt = S.decisions.length
+    ? S.decisions.map(d=>`- ${d.texto}${d.consec ? " ("+d.consec+")" : ""}`).join("\n")
+    : "- Ninguna anotada";
+  const objetosTxt = S.items.length
+    ? S.items.filter(o=>o.estado!=="vendible").map(o=>`- ${o.nombre}${o.nota ? " — "+o.nota : ""}`).join("\n")
+    : "- Ninguno anotado";
+  const ultima = S.log[0] ? `${S.log[0].fecha} — ${S.log[0].texto}` : "Sin registrar.";
+  const pendientes = c.notas ? c.notas : "Nada anotado.";
+  const noOlvidar = S.items.filter(o=>o.estado==="no vender");
+  const noOlvidarTxt = noOlvidar.length
+    ? noOlvidar.map(o=>`- ${o.nombre}${o.nota ? " — "+o.nota : ""}`).join("\n")
+    : "Nada anotado.";
+
+  return `BALDUR'S GATE 3 — ESTADO DE CAMPAÑA
+
+ACTO: ${c.acto || "—"}
+ZONA: ${c.zona || "—"}
+
+OBJETIVO ACTUAL:
+${c.objetivo || "—"}
+
+PRÓXIMO OBJETIVO:
+${c.proximo || "—"}
+
+GRUPO:
+${grupo}
+
+MISIONES IMPORTANTES:
+${misionesTxt}
+
+DECISIONES:
+${decisionesTxt}
+
+OBJETOS IMPORTANTES:
+${objetosTxt}
+
+ÚLTIMA SESIÓN:
+${ultima}
+
+PENDIENTES:
+${pendientes}
+
+NO OLVIDAR:
+${noOlvidarTxt}`;
+}
+
+/* ---------------- cabecera ---------------- */
+function pintarCabecera(){
+  document.getElementById("campTitle").value = S.campaign.titulo || "";
+  document.getElementById("metaLine").textContent =
+    "Acto " + (S.campaign.acto||"—") + " · " + (S.campaign.zona||"Zona sin anotar") +
+    " · Grupo nivel " + S.chars.map(c=>c.nivel).join(" / ");
+  const b = document.getElementById("daysBadge");
+  const d = diasDesde(ultimaSesion());
+  if(d === null){ b.textContent = "Sin sesiones anotadas"; b.className = "badge"; }
+  else if(d <= 0){ b.textContent = "Jugaste hoy"; b.className = "badge"; }
+  else { b.textContent = d + (d===1?" día":" días") + " sin jugar"; b.className = "badge" + (d>=7?" warn":""); }
+}
+
+/* ---------------- pestañas ---------------- */
+const TABS = [
+  ["estado","Dónde estoy"],
+  ["grupo","El grupo"],
+  ["misiones","Misiones"],
+  ["decisiones","Decisiones"],
+  ["objetos","Objetos"],
+  ["bitacora","Bitácora"]
+];
+
+function pintarTabs(){
+  document.getElementById("tabs").innerHTML = TABS.map(([k,t])=>
+    `<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${t}</button>`).join("");
+}
+
+/* ---------------- vistas ---------------- */
+function vistaEstado(){
+  const d = diasDesde(ultimaSesion());
+  const ult = S.log[0];
+  const misionesActivas = S.quests.filter(q=>q.estado==="activa");
+  const resumen = `
+    <section class="card hero">
+      <h2>Retomar la partida</h2>
+      <dl>
+        <dt>Acto</dt><dd>${esc(S.campaign.acto||"—")}</dd>
+        <dt>Zona</dt><dd>${esc(S.campaign.zona||"—")}</dd>
+        <dt>Objetivo actual</dt><dd>${esc(S.campaign.objetivo||"—")}</dd>
+        <dt>Próximo objetivo</dt><dd>${esc(S.campaign.proximo||"—")}</dd>
+        <dt>Misiones activas</dt><dd>${misionesActivas.length ? esc(misionesActivas.map(q=>q.titulo).join(" · ")) : "ninguna anotada"}</dd>
+        <dt>Grupo</dt><dd>${S.chars.map(c=>esc(c.nombre)+" (n."+c.nivel+" "+esc(c.clase)+")").join(" · ")}</dd>
+        <dt>Última sesión</dt><dd>${ult ? esc(ult.fecha)+" — "+esc(ult.texto.slice(0,180)) : "sin anotar"}</dd>
+      </dl>
+      ${d!==null && d>=7 ? `<p class="mini" style="margin-top:10px">Pasó más de una semana: leé la última entrada de la bitácora antes de cargar la partida.</p>` : ""}
+      <div class="row wrap" style="margin-top:14px">
+        <button class="btn primary" data-act="gen-ia">Generar texto para retomar (IA)</button>
+      </div>
+      <textarea id="textoIAOut" readonly placeholder="Tocá el botón para generar el resumen que le vas a pasar a la IA." style="margin-top:10px; min-height:220px; font-family:monospace; font-size:.85rem"></textarea>
+    </section>`;
+
+  return resumen + `
+    <section class="card">
+      <h2>Estado de la campaña</h2>
+      <div class="grid2" style="margin-top:10px">
+        <div class="field"><label>Acto</label><input data-path="campaign.acto" value="${esc(S.campaign.acto)}"></div>
+        <div class="field"><label>Zona actual</label><input data-path="campaign.zona" value="${esc(S.campaign.zona)}"></div>
+      </div>
+      <div class="field"><label>Objetivo actual</label><input data-path="campaign.objetivo" value="${esc(S.campaign.objetivo)}"></div>
+      <div class="field"><label>Próximo objetivo</label><input data-path="campaign.proximo" value="${esc(S.campaign.proximo)}"></div>
+      <div class="field"><label>Notas sueltas</label><textarea data-path="campaign.notas" placeholder="Cosas que no quiero olvidar: cofres sin abrir, NPC pendientes, dónde dejé a alguien…">${esc(S.campaign.notas)}</textarea></div>
+    </section>
+    <section class="card">
+      <h3>Copia de seguridad</h3>
+      <p class="mini">Copiá este texto a un archivo si querés un respaldo, o pegá uno anterior para restaurar.</p>
+      <div class="row wrap" style="margin:10px 0">
+        <button class="btn" data-act="copiar">Copiar mis datos</button>
+        <button class="btn" data-act="descargar" id="btnDescargar" hidden>Descargar copia</button>
+        <button class="btn ghost" data-act="restaurar">Restaurar desde texto</button>
+      </div>
+      <textarea id="backupBox" placeholder="Pegá acá una copia anterior y tocá Restaurar."></textarea>
+    </section>`;
+}
+
+function vistaGrupo(){
+  return S.chars.map((c,i)=>`
+    <section class="card pc">
+      <header>
+        <div>
+          <input class="who" data-path="chars.${i}.nombre" value="${esc(c.nombre)}" aria-label="Nombre">
+          <div class="role">${esc(c.jugador)}</div>
+        </div>
+        <div class="lvl">
+          <button data-act="lvl-" data-i="${i}" aria-label="Bajar nivel">−</button>
+          <span class="mini">nivel</span><b>${c.nivel}</b>
+          <button data-act="lvl+" data-i="${i}" aria-label="Subir nivel">+</button>
+        </div>
+      </header>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label>Raza</label><input data-path="chars.${i}.raza" value="${esc(c.raza)}"></div>
+        <div class="field"><label>Clase</label><input data-path="chars.${i}.clase" value="${esc(c.clase)}"></div>
+      </div>
+      <div class="stats">
+        ${["fue","des","con","int","sab","car"].map(k=>`
+          <div class="stat">
+            <label>${k.toUpperCase()}</label>
+            <input type="number" min="1" max="30" data-path="chars.${i}.stats.${k}" value="${esc(c.stats[k])}">
+          </div>`).join("")}
+      </div>
+      <div class="field"><label>Objetos que le estoy buscando</label><textarea data-path="chars.${i}.buscar" placeholder="Objetos clave para esta build">${esc(c.buscar)}</textarea></div>
+    </section>`).join("");
+}
+
+function vistaMisiones(){
+  const grupos = ESTADOS_MISION.map(e=>{
+    const l = S.quests.filter(q=>q.estado===e);
+    if(!l.length) return "";
+    return `<h3 style="margin-top:14px">${e[0].toUpperCase()+e.slice(1)}</h3>` + l.map(q=>{
+      const i = S.quests.indexOf(q);
+      return `<div class="item">
+        <div class="lines">
+          <input class="${q.estado==='completada'?'strike':''}" data-path="quests.${i}.titulo" value="${esc(q.titulo)}">
+          <div class="sub">
+            <select data-path="quests.${i}.estado" data-rerender="1">${ESTADOS_MISION.map(s=>`<option ${s===q.estado?"selected":""}>${s}</option>`).join("")}</select>
+            <input data-path="quests.${i}.acto" value="${esc(q.acto)}" placeholder="Acto">
+            <input data-path="quests.${i}.nota" value="${esc(q.nota)}" placeholder="Dónde quedó / qué falta">
+          </div>
+        </div>
+        <button class="btn del" data-act="del-quest" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`;
+    }).join("");
+  }).join("");
+  return `<section class="card">
+    <div class="spread"><h2>Misiones</h2><button class="btn" data-act="add-quest">Añadir misión</button></div>
+    ${S.quests.length ? grupos : `<p class="empty">Sin misiones anotadas. Empezá por la que estés haciendo ahora.</p>`}
+  </section>`;
+}
+
+function vistaDecisiones(){
+  return `<section class="card">
+    <div class="spread"><h2>Decisiones importantes</h2><button class="btn" data-act="add-dec">Añadir decisión</button></div>
+    <p class="mini">Lo que elegiste y no querés olvidar: a quién salvaste, a quién mataste, con quién te peleaste, qué prometiste.</p>
+    ${S.decisions.length ? S.decisions.map((d,i)=>`
+      <div class="item">
+        <div class="lines">
+          <input data-path="decisions.${i}.texto" value="${esc(d.texto)}" placeholder="Qué decidí">
+          <div class="sub">
+            <input data-path="decisions.${i}.fecha" value="${esc(d.fecha)}" placeholder="Fecha">
+            <input data-path="decisions.${i}.consec" value="${esc(d.consec||"")}" placeholder="Consecuencia o pendiente">
+          </div>
+        </div>
+        <button class="btn del" data-act="del-dec" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`).join("") : `<p class="empty">Todavía no anotaste decisiones.</p>`}
+  </section>`;
+}
+
+function vistaObjetos(){
+  return `<section class="card">
+    <div class="spread"><h2>Objetos</h2><button class="btn" data-act="add-item">Añadir objeto</button></div>
+    <p class="mini">Marcá como <span class="tag keep">no vender</span> todo lo que sirva para una build futura.</p>
+    ${S.items.length ? S.items.map((o,i)=>`
+      <div class="item">
+        <div class="lines">
+          <input data-path="items.${i}.nombre" value="${esc(o.nombre)}" placeholder="Nombre del objeto">
+          <div class="sub">
+            <select data-path="items.${i}.estado" data-rerender="1">${ESTADOS_OBJETO.map(s=>`<option ${s===o.estado?"selected":""}>${s}</option>`).join("")}</select>
+            <select data-path="items.${i}.para">
+              <option value="">— para quién —</option>
+              ${S.chars.map(c=>`<option ${c.nombre===o.para?"selected":""}>${esc(c.nombre)}</option>`).join("")}
+              <option ${o.para==="campamento"?"selected":""}>campamento</option>
+            </select>
+            <input data-path="items.${i}.nota" value="${esc(o.nota)}" placeholder="Dónde está / por qué sirve">
+          </div>
+        </div>
+        <button class="btn del" data-act="del-item" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`).join("") : `<p class="empty">Sin objetos anotados. Anotá los que dudes si vender.</p>`}
+  </section>`;
+}
+
+function vistaBitacora(){
+  return `<section class="card">
+    <div class="spread"><h2>Bitácora de sesiones</h2><button class="btn primary" data-act="add-log">Nueva entrada</button></div>
+    <p class="mini">Al terminar de jugar, escribí tres líneas: dónde quedé, qué hice, qué iba a hacer después.</p>
+    ${S.log.length ? S.log.map((l,i)=>`
+      <div class="item" style="padding-top:14px">
+        <div class="lines">
+          <div class="sub"><input data-path="log.${i}.fecha" value="${esc(l.fecha)}" style="max-width:140px"></div>
+          <textarea data-path="log.${i}.texto" placeholder="Qué pasó esta sesión y dónde quedé guardado">${esc(l.texto)}</textarea>
+        </div>
+        <button class="btn del" data-act="del-log" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`).join("") : `<p class="empty">Todavía no hay entradas. La primera puede ser simplemente dónde arrancás.</p>`}
+  </section>`;
+}
+
+const VISTAS = {estado:vistaEstado, grupo:vistaGrupo, misiones:vistaMisiones, decisiones:vistaDecisiones, objetos:vistaObjetos, bitacora:vistaBitacora};
+
+function render(){
+  pintarCabecera();
+  pintarTabs();
+  document.getElementById("view").innerHTML = VISTAS[tab]();
+  if(tab==="estado" && window._descargasOk){
+    const b = document.getElementById("btnDescargar"); if(b) b.hidden = false;
+  }
+}
+
+/* ---------------- eventos ---------------- */
+document.addEventListener("input", e=>{
+  const t = e.target;
+  if(!t.dataset || !t.dataset.path) return;
+  const [obj, key] = porRuta(t.dataset.path);
+  obj[key] = t.value;
+  if(t.dataset.path.startsWith("campaign.")) pintarCabecera();
+  guardar();
+});
+
+document.addEventListener("change", e=>{
+  const t = e.target;
+  if(t.dataset && t.dataset.path && t.dataset.rerender) render();
+});
+
+document.addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+
+  if(b.dataset.tab){ tab = b.dataset.tab; render(); window.scrollTo({top:0}); return; }
+
+  const act = b.dataset.act, i = +b.dataset.i, j = +b.dataset.j;
+  if(!act) return;
+
+  switch(act){
+    case "lvl+": if(S.chars[i].nivel < 12) S.chars[i].nivel++; break;
+    case "lvl-": if(S.chars[i].nivel > 1) S.chars[i].nivel--; break;
+    case "add-quest": S.quests.unshift({id:nuevoId(), titulo:"", estado:"activa", acto:S.campaign.acto, nota:""}); break;
+    case "del-quest": S.quests.splice(i,1); break;
+    case "add-dec": S.decisions.unshift({id:nuevoId(), texto:"", fecha:hoy(), consec:""}); break;
+    case "del-dec": S.decisions.splice(i,1); break;
+    case "add-item": S.items.unshift({id:nuevoId(), nombre:"", estado:"guardado", para:"", nota:""}); break;
+    case "del-item": S.items.splice(i,1); break;
+    case "add-log": S.log.unshift({id:nuevoId(), fecha:hoy(), texto:""}); break;
+    case "del-log": S.log.splice(i,1); break;
+    case "copiar": {
+      const txt = JSON.stringify(S);
+      navigator.clipboard.writeText(txt).then(()=>avisarGuardado("Copiado"),
+        ()=>{ const box=document.getElementById("backupBox"); box.value=txt; box.select(); });
+      return;
+    }
+    case "descargar": {
+      (async()=>{
+        try{
+          const d = await claude.use("downloads");
+          if(!d) return;
+          await d.save({filename:"campania-bg3.json", data:JSON.stringify(S,null,2)});
+        }catch(err){}
+      })();
+      return;
+    }
+    case "gen-ia": {
+      const texto = generarTextoIA();
+      const ta = document.getElementById("textoIAOut");
+      if(ta) ta.value = texto;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(texto).then(
+          ()=>avisarGuardado("Texto generado y copiado"),
+          ()=>avisarGuardado("Texto generado, copialo manualmente")
+        );
+      } else {
+        avisarGuardado("Texto generado, copialo manualmente");
+      }
+      return;
+    }
+    case "restaurar": {
+      const box = document.getElementById("backupBox");
+      try{
+        const datos = JSON.parse(box.value);
+        if(!datos.chars) throw new Error("formato");
+        S = datos; render(); guardar(); avisarGuardado("Datos restaurados");
+      }catch(err){ avisarGuardado("Ese texto no es una copia válida"); }
+      return;
+    }
+    default: return;
+  }
+  render(); guardar();
+});
+
+document.getElementById("themeBtn").addEventListener("click", ()=>{
+  const cur = document.documentElement.getAttribute("data-theme");
+  const oscuro = cur ? cur==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", oscuro ? "light" : "dark");
+});
+
+(async()=>{
+  try{
+    const d = await claude.use("downloads");
+    if(d){ window._descargasOk = true; const b=document.getElementById("btnDescargar"); if(b) b.hidden=false; }
+  }catch(e){}
+})();
+
+S = ESTADO_BASE; render();
+cargar();
+})();
+</script>
+</body>
+</html>
