@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de campaña — Baldur's Gate 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-auth.js"></script>
+<style>
+:root{
+  --vellum:#EFE7D6;
+  --panel:#F7F2E7;
+  --ink:#241C2E;
+  --ink-soft:#5A4F63;
+  --line:#D6C9AE;
+  --amethyst:#6B4C8F;
+  --verdigris:#2F7267;
+  --ember:#8C3B2E;
+  --bg:var(--vellum);
+  --shadow:0 1px 0 rgba(36,28,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --vellum:#15121B; --panel:#1E1927; --ink:#E9E1D0; --ink-soft:#A79BB4;
+    --line:#332A42; --amethyst:#B79BE0; --verdigris:#6FC3B2; --ember:#E08A6F;
+    --bg:var(--vellum); --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --vellum:#15121B; --panel:#1E1927; --ink:#E9E1D0; --ink-soft:#A79BB4;
+  --line:#332A42; --amethyst:#B79BE0; --verdigris:#6FC3B2; --ember:#E08A6F;
+  --bg:var(--vellum); --shadow:none;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:Karla, "Helvetica Neue", Arial, sans-serif;
+  font-size:16px; line-height:1.5;
+}
+h1,h2,h3{font-family:Fraunces, Georgia, "Times New Roman", serif; font-weight:600; margin:0;}
+h1{font-size:1.9rem; letter-spacing:-.01em}
+h2{font-size:1.35rem}
+h3{font-size:1.05rem}
+p{margin:.4rem 0}
+a{color:var(--amethyst)}
+.wrap{max-width:1100px; margin:0 auto; padding:20px 16px 80px}
+
+header.top{display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; justify-content:space-between; padding-bottom:14px; border-bottom:2px solid var(--line)}
+header.top.con-banner{background-size:cover; background-position:center; border-radius:12px; padding:20px; border-bottom:none; position:relative}
+header.top.con-banner::before{content:""; position:absolute; inset:0; background:rgba(0,0,0,.35); border-radius:12px; z-index:0}
+header.top.con-banner > *{position:relative; z-index:1}
+header.top.con-banner #campTitle{color:#fff}
+header.top.con-banner .meta{color:rgba(255,255,255,.85)}
+header.top.con-banner .badge{background:rgba(0,0,0,.35); color:#fff; border-color:rgba(255,255,255,.5)}
+.title-block{min-width:0}
+.title-block input{font-family:Fraunces,Georgia,serif; font-size:1.9rem; font-weight:600}
+.meta{color:var(--ink-soft); font-size:.9rem; margin-top:2px}
+.badge{display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:.8rem; color:var(--ink-soft); background:var(--panel)}
+.badge.warn{border-color:var(--ember); color:var(--ember)}
+
+.banner-lectura{background:var(--panel); border:1px solid var(--ember); color:var(--ember); border-radius:8px; padding:8px 14px; margin:14px 0 0; font-size:.9rem; display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+
+nav.tabs{display:flex; gap:4px; overflow-x:auto; margin:16px 0 22px; padding-bottom:4px; -webkit-overflow-scrolling:touch}
+nav.tabs button{
+  flex:0 0 auto; background:none; border:none; border-bottom:2px solid transparent;
+  color:var(--ink-soft); font-family:inherit; font-size:.95rem; padding:8px 12px; cursor:pointer; white-space:nowrap;
+}
+nav.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--amethyst); font-weight:700}
+nav.tabs button:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{outline:2px solid var(--amethyst); outline-offset:2px}
+
+input, textarea, select{
+  font-family:inherit; font-size:1rem; color:var(--ink); background:transparent;
+  border:none; border-bottom:1px dashed var(--line); width:100%; padding:4px 2px; border-radius:0;
+}
+textarea{border:1px solid var(--line); border-radius:6px; padding:8px; resize:vertical; min-height:70px; background:var(--panel); line-height:1.5}
+select{border:1px solid var(--line); border-radius:6px; padding:5px; background:var(--panel); width:auto}
+input::placeholder, textarea::placeholder{color:var(--ink-soft); opacity:.7}
+label{display:block; font-size:.78rem; color:var(--ink-soft); margin-bottom:1px}
+.field{margin-bottom:12px}
+
+.card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; box-shadow:var(--shadow); margin-bottom:16px}
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+.row{display:flex; gap:10px; align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spread{display:flex; justify-content:space-between; align-items:center; gap:10px}
+
+.btn{
+  font-family:inherit; font-size:.88rem; color:var(--ink); background:var(--panel);
+  border:1px solid var(--line); border-radius:6px; padding:6px 12px; cursor:pointer;
+}
+.btn:hover{border-color:var(--amethyst)}
+.btn.primary{background:var(--amethyst); border-color:var(--amethyst); color:#fff}
+.btn.ghost{border-style:dashed; color:var(--ink-soft)}
+.btn.tiny{padding:2px 8px; font-size:.78rem}
+.btn.del{color:var(--ember); border-color:transparent; background:none; padding:2px 6px}
+
+.hero{border-left:4px solid var(--verdigris)}
+.hero dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:0}
+.hero dt{color:var(--ink-soft); font-size:.85rem}
+.hero dd{margin:0}
+
+.pc{border-top:3px solid var(--amethyst)}
+.pc header{display:flex; gap:10px; align-items:flex-start; justify-content:space-between}
+.pc .who{font-family:Fraunces,Georgia,serif; font-size:1.15rem; font-weight:600}
+.pc .role input{font-size:.85rem; color:var(--ink-soft)}
+.pc-avatar{width:56px; height:56px; border-radius:10px; object-fit:cover; flex:0 0 auto; background:var(--bg); border:1px dashed var(--line)}
+.pc-avatar-wrap{position:relative; width:56px; height:56px; border-radius:10px; overflow:hidden; flex:0 0 auto; cursor:pointer; background:var(--bg); border:1px dashed var(--line)}
+.pc-avatar-wrap img{width:100%; height:100%; object-fit:cover; display:block}
+.pc-avatar-wrap .pencil{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.45); color:#fff; font-size:1.1rem; opacity:0; transition:opacity .15s}
+.pc-avatar-wrap:hover .pencil{opacity:1}
+.pc-avatar-wrap .quitar-x{position:absolute; top:2px; right:2px; z-index:2; background:rgba(0,0,0,.55); color:#fff; border:none; border-radius:4px; font-size:.7rem; padding:0 4px; line-height:1.4; cursor:pointer}
+
+.modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px}
+.modal-overlay[hidden]{display:none !important}
+.modal-box{max-width:420px; width:100%; max-height:80vh; overflow:auto}
+.lvl{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; padding:2px 6px; background:var(--bg)}
+.lvl b{font-variant-numeric:tabular-nums; min-width:1.6em; text-align:center}
+.lvl button{border:none; background:none; color:var(--ink-soft); font-size:1.1rem; cursor:pointer; line-height:1; padding:0 4px}
+
+.stats{display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin:14px 0}
+.stat{text-align:center}
+.stat label{font-size:.7rem; text-align:center; margin-bottom:3px}
+.stat input{text-align:center; border:1px solid var(--line); border-radius:6px; padding:5px 2px; background:var(--bg)}
+
+.item{display:grid; grid-template-columns:1fr auto; gap:8px; padding:10px 0; border-top:1px dotted var(--line)}
+.item:first-of-type{border-top:none}
+.item .lines{display:grid; gap:6px}
+.sub{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.sub > *{flex:1 1 140px}
+.tag{font-size:.75rem; border:1px solid var(--line); border-radius:4px; padding:1px 7px; color:var(--ink-soft)}
+.tag.keep{border-color:var(--ember); color:var(--ember)}
+.empty{color:var(--ink-soft); font-size:.92rem; padding:6px 0}
+.strike{text-decoration:line-through; opacity:.55}
+.save{position:fixed; bottom:12px; right:12px; font-size:.78rem; color:var(--ink-soft); background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:4px 12px; opacity:0; transition:opacity .25s}
+.save.show{opacity:1}
+.mini{font-size:.85rem; color:var(--ink-soft)}
+.user-badge{font-weight:700; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.login-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px}
+#bannerLectura[hidden], #loginScreen[hidden], #appScreen[hidden], #verifyScreen[hidden]{ display:none !important; }
+.login-box{max-width:360px; width:100%; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:28px; box-shadow:var(--shadow)}
+.login-box h1{font-size:1.5rem; margin-bottom:4px}
+.login-box .mini{margin-bottom:18px}
+.login-box .field{margin-bottom:14px}
+.login-err{color:var(--ember); font-size:.85rem; min-height:1.2em; margin-top:10px}
+.login-ok{color:var(--verdigris); font-size:.85rem; min-height:1.2em; margin-top:10px}
+
+.hist-row{display:grid; grid-template-columns:auto auto 1fr; gap:10px; align-items:baseline; padding:8px 0; border-top:1px dotted var(--line); font-size:.9rem}
+.hist-row:first-of-type{border-top:none}
+.hist-when{color:var(--ink-soft); white-space:nowrap; font-size:.8rem}
+.hist-who{color:var(--verdigris); white-space:nowrap; font-weight:700}
+
+.solo-lectura button[data-act]:not([data-act="volver-propia"]):not([data-act="ver-usuario"]){display:none}
+
+@media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-wrap" hidden>
+  <div class="login-box">
+    <h1 id="authTitle">Iniciar sesión</h1>
+    <p class="mini">Cada jugador tiene su propia campaña. Iniciá sesión o creá una cuenta nueva.</p>
+
+    <form id="loginForm">
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" autocomplete="username" required></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="loginPass" autocomplete="current-password" required></div>
+      <button class="btn primary" type="submit" style="width:100%">Entrar</button>
+    </form>
+
+    <form id="signupForm" hidden>
+      <div class="field"><label>Tu nombre (se ve en "Ver campañas")</label><input type="text" id="signupNombre" required></div>
+      <div class="field"><label>Email</label><input type="email" id="signupEmail" autocomplete="username" required></div>
+      <div class="field"><label>Contraseña (mínimo 6 caracteres)</label><input type="password" id="signupPass" autocomplete="new-password" minlength="6" required></div>
+      <button class="btn primary" type="submit" style="width:100%">Crear cuenta</button>
+    </form>
+
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-ok" id="loginOk"></div>
+    <p class="mini" style="margin-top:14px; text-align:center">
+      <a href="#" id="toggleAuth">¿No tenés cuenta? Registrate</a>
+    </p>
+  </div>
+</div>
+
+<div id="verifyScreen" class="login-wrap" hidden>
+  <div class="login-box">
+    <h1>Confirmá tu email</h1>
+    <p class="mini">Te mandamos un link de verificación a <strong id="verifyEmail"></strong>. Abrilo desde tu correo y después volvé acá.</p>
+    <button class="btn primary" id="btnYaVerifique" style="width:100%">Ya lo verifiqué</button>
+    <button class="btn ghost" id="btnReenviarVerif" style="width:100%; margin-top:10px">Reenviar email</button>
+    <div class="login-ok" id="verifyMsg"></div>
+    <p class="mini" style="margin-top:14px; text-align:center"><a href="#" id="btnSalirVerif">Cerrar sesión</a></p>
+  </div>
+</div>
+
+<div id="appScreen" class="wrap" hidden>
+  <header class="top">
+    <div class="title-block">
+      <input id="campTitle" data-path="campaign.titulo" aria-label="Nombre de la campaña" placeholder="Nombre de tu campaña" value="">
+      <div class="meta" id="metaLine"></div>
+    </div>
+    <div class="row">
+      <span class="badge user-badge" id="userBadge" title="Usuario conectado"></span>
+      <span class="badge" id="cloudBadge"></span>
+      <span class="badge" id="daysBadge"></span>
+      <button class="btn tiny" id="logoutBtn" title="Cerrar sesión" hidden>Salir</button>
+      <button class="btn tiny" id="configBtn" title="Configuración">⚙️</button>
+      <button class="btn tiny" id="themeBtn" title="Cambiar tema">◐</button>
+    </div>
+  </header>
+  <div id="bannerLectura" class="banner-lectura" hidden></div>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+
+<div id="configModal" class="modal-overlay" hidden>
+  <div class="modal-box card">
+    <div class="spread"><h2>Configuración</h2><button class="btn tiny" id="cerrarConfig" aria-label="Cerrar">✕</button></div>
+    <div id="configBody" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div class="save" id="saveNote">Guardado</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- configuración de Firebase ---------------- */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBdJfnD-YHBkOzZwTCh4dVqFxeuUM0umjc",
+  authDomain: "registrobg3.firebaseapp.com",
+  projectId: "registrobg3",
+  storageBucket: "registrobg3.firebasestorage.app",
+  messagingSenderId: "287687692308",
+  appId: "1:287687692308:web:7d829f9ff76c519d2d5701"
+};
+
+/* ---------------- estado inicial (vacío: cada usuario crea el suyo) ---------------- */
+const nuevoId = () => Math.random().toString(36).slice(2,9);
+
+const ESTADO_VACIO = {
+  campaign:{ titulo:"", acto:"", zona:"", objetivo:"", proximo:"", notas:"" },
+  chars:[], quests:[], decisions:[], items:[], log:[]
+};
+
+const ESTADOS_MISION = ["activa","pendiente","en pausa","completada"];
+const ESTADOS_OBJETO = ["buscar","guardado","equipado","no vender","vendible"];
+
+let S = null;
+let tab = "estado";
+const CLAVE = "bg3-campania-v2";
+let saveTimer = null;
+
+/* modo: "claude" (dentro de claude.ai, sin login), "firebase" (cuentas propias), "local" (sin nube) */
+let modo = "local";
+let claudeDb = null;
+let firebaseDb = null, firebaseAuth = null;
+let uid = null, nombrePropio = "";
+let registrandose = false; // true mientras se está creando una cuenta nueva (evita mostrar la app de golpe)
+let contextoUid = null;   // uid de los datos que se están mostrando ahora mismo
+let modoLectura = false;  // true si estás mirando la campaña de otro usuario
+let misDatos = null;      // respaldo de tu propia campaña mientras mirás la de otro
+let viendoNombre = "";
+
+function leerImagenComprimida(file, maxAncho, maxAlto, calidad){
+  return new Promise((resolve, reject)=>{
+    const lector = new FileReader();
+    lector.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        const escala = Math.min(1, maxAncho / w, maxAlto / h);
+        w = Math.max(1, Math.round(w * escala));
+        h = Math.max(1, Math.round(h * escala));
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", calidad));
+      };
+      img.onerror = reject;
+      img.src = lector.result;
+    };
+    lector.onerror = reject;
+    lector.readAsDataURL(file);
+  });
+}
+
+async function manejarImagen(input){
+  if(modoLectura) return;
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(!file.type.startsWith("image/")){ avisarGuardado("Eso no es una imagen"); input.value=""; return; }
+  try{
+    if(input.dataset.imgtype === "banner"){
+      S.campaign.banner = await leerImagenComprimida(file, 1200, 320, 0.7);
+    } else if(input.dataset.imgtype === "char"){
+      const i = +input.dataset.i;
+      S.chars[i].imagen = await leerImagenComprimida(file, 300, 300, 0.75);
+    }
+    render(); guardar();
+  }catch(e){ avisarGuardado("No se pudo procesar la imagen"); }
+  input.value = "";
+}
+
+/* ---------------- utilidades ---------------- */
+function porRuta(path){
+  const p = path.split(".");
+  let o = S;
+  for(let i=0;i<p.length-1;i++) o = Array.isArray(o) ? o[+p[i]] : o[p[i]];
+  return [o, p[p.length-1]];
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function hoy(){ return new Date().toISOString().slice(0,10); }
+function diasDesde(fecha){
+  if(!fecha) return null;
+  const d = Math.floor((Date.now() - new Date(fecha+"T12:00:00").getTime())/86400000);
+  return isNaN(d) ? null : d;
+}
+function ultimaSesion(){ return S.log.length ? S.log[0].fecha : null; }
+
+function avisarGuardado(txt){
+  const n = document.getElementById("saveNote");
+  n.textContent = txt || "Guardado";
+  n.classList.add("show");
+  clearTimeout(n._t); n._t = setTimeout(()=>n.classList.remove("show"), 1400);
+}
+
+function emojiClase(clase){
+  const c = (clase||"").toLowerCase();
+  if(c.includes("druid")) return "🌿";
+  if(c.includes("bardo")) return "🎵";
+  if(c.includes("pícaro") || c.includes("picaro") || c.includes("rogue")) return "🏹";
+  if(c.includes("monje")) return "👊";
+  if(c.includes("guerrero") || c.includes("fighter")) return "⚔️";
+  if(c.includes("mago") || c.includes("wizard")) return "🔮";
+  if(c.includes("clérigo") || c.includes("clerigo") || c.includes("cleric")) return "✨";
+  return "•";
+}
+
+function normalizarNombre(n){ return (n||"").trim().toLowerCase(); }
+
+function traducirErrorAuth(ex){
+  const code = (ex && ex.code) || "";
+  if(code.includes("email-already-in-use")) return "Ese email ya tiene una cuenta.";
+  if(code.includes("weak-password")) return "La contraseña debe tener al menos 6 caracteres.";
+  if(code.includes("invalid-email")) return "Ese email no es válido.";
+  if(code.includes("wrong-password") || code.includes("user-not-found") || code.includes("invalid-credential")) return "Email o contraseña incorrectos.";
+  return "No se pudo completar la operación.";
+}
+
+/* ---------------- Firebase ---------------- */
+function iniciarFirebase(){
+  if(typeof firebase === "undefined") return false;
+  if(!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("TU_")) return false;
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDb = firebase.firestore();
+    firebaseAuth = firebase.auth();
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------------- guardado/carga: modo claude o local ---------------- */
+function guardarInicial(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    const ahora = new Date().toISOString();
+    const json = JSON.stringify(S);
+    try{ localStorage.setItem(CLAVE, JSON.stringify({json, actualizado:ahora})); }catch(e){}
+    if(modo === "claude" && claudeDb){
+      try{ await claudeDb.doc("campaign/state").set({json, actualizado:ahora}); avisarGuardado(); }
+      catch(e){ avisarGuardado("Guardado solo en este navegador"); }
+    } else {
+      avisarGuardado("Guardado en este navegador");
+    }
+  }, 700);
+}
+
+async function cargarInicial(){
+  let local = null, localTs = null;
+  try{
+    const raw = localStorage.getItem(CLAVE);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p && p.json){ local = JSON.parse(p.json); localTs = p.actualizado || null; }
+      else if(p && p.chars){ local = p; }
+    }
+  }catch(e){}
+
+  let remote = null, remoteTs = null;
+  if(modo === "claude" && claudeDb){
+    try{
+      const snap = await claudeDb.doc("campaign/state").get();
+      if(snap.exists && snap.data() && snap.data().json){ remote = JSON.parse(snap.data().json); remoteTs = snap.data().actualizado || null; }
+    }catch(e){}
+  }
+
+  if(remote && local){
+    S = (localTs && remoteTs) ? ((new Date(localTs) > new Date(remoteTs)) ? local : remote) : remote;
+  } else {
+    S = remote || local || JSON.parse(JSON.stringify(ESTADO_VACIO));
+  }
+  render();
+  guardarInicial();
+}
+
+/* ---------------- guardado/carga: modo firebase (multiusuario) ---------------- */
+async function escribirDocPropio(json, ts){
+  await firebaseDb.collection("campanias").doc(uid).set({json, actualizado:ts});
+}
+
+async function recortarHistorial(){
+  try{
+    const snap = await firebaseDb.collection("campanias").doc(uid).collection("historial")
+      .orderBy("actualizado","desc").get();
+    if(snap.size <= 30) return;
+    const sobrantes = snap.docs.slice(30);
+    const batch = firebaseDb.batch();
+    sobrantes.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+  }catch(e){}
+}
+
+async function vaciarHistorialPropio(){
+  let snap = await firebaseDb.collection("campanias").doc(uid).collection("historial").limit(450).get();
+  while(!snap.empty){
+    const batch = firebaseDb.batch();
+    snap.docs.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+    snap = await firebaseDb.collection("campanias").doc(uid).collection("historial").limit(450).get();
+  }
+}
+
+function guardarPropia(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    if(modoLectura) return;
+    const ahora = new Date().toISOString();
+    const json = JSON.stringify(S);
+    try{ localStorage.setItem(CLAVE+":"+uid, JSON.stringify({json, actualizado:ahora})); }catch(e){}
+    try{
+      await escribirDocPropio(json, ahora);
+      const resumen = `Acto ${S.campaign.acto||"—"} · ${S.campaign.zona||"—"}`;
+      await firebaseDb.collection("campanias").doc(uid).collection("historial").add({actualizado:ahora, autor:nombrePropio, resumen});
+      await recortarHistorial();
+      avisarGuardado();
+    }catch(e){ avisarGuardado("Guardado solo en este navegador"); }
+  }, 700);
+}
+
+async function cargarPropia(){
+  contextoUid = uid; modoLectura = false;
+  let local = null, localTs = null;
+  try{
+    const raw = localStorage.getItem(CLAVE+":"+uid);
+    if(raw){ const p = JSON.parse(raw); if(p && p.json){ local = JSON.parse(p.json); localTs = p.actualizado || null; } }
+  }catch(e){}
+
+  let remote = null, remoteTs = null;
+  try{
+    const doc = await firebaseDb.collection("campanias").doc(uid).get();
+    if(doc.exists && doc.data() && doc.data().json){ remote = JSON.parse(doc.data().json); remoteTs = doc.data().actualizado || null; }
+  }catch(e){}
+
+  if(remote && local){
+    S = (localTs && remoteTs) ? ((new Date(localTs) > new Date(remoteTs)) ? local : remote) : remote;
+  } else {
+    S = remote || local || JSON.parse(JSON.stringify(ESTADO_VACIO));
+  }
+
+  // esto es solo una sincronización al entrar, no una edición: no debe generar historial
+  const ahora = new Date().toISOString();
+  const json = JSON.stringify(S);
+  try{ localStorage.setItem(CLAVE+":"+uid, JSON.stringify({json, actualizado:ahora})); }catch(e){}
+  try{ await escribirDocPropio(json, ahora); }catch(e){}
+}
+
+async function verCampaniaDe(otroUid, nombre){
+  if(!firebaseDb) return;
+  misDatos = S;
+  try{
+    const doc = await firebaseDb.collection("campanias").doc(otroUid).get();
+    S = (doc.exists && doc.data() && doc.data().json) ? JSON.parse(doc.data().json) : JSON.parse(JSON.stringify(ESTADO_VACIO));
+  }catch(e){ avisarGuardado("No se pudo cargar esa campaña"); return; }
+  contextoUid = otroUid; modoLectura = true; viendoNombre = nombre; tab = "estado";
+  render();
+}
+
+function volverAMiCampania(){
+  S = misDatos;
+  contextoUid = uid;
+  modoLectura = false;
+  viendoNombre = "";
+  const banner = document.getElementById("bannerLectura");
+  if(banner){
+    banner.hidden = true;
+    banner.innerHTML = "";
+  }
+  tab = "estado";
+  render();
+}
+
+function guardar(){
+  if(modoLectura) return;
+  if(modo === "firebase") guardarPropia();
+  else guardarInicial();
+}
+
+async function leerHistorial(){
+  if(modo !== "firebase" || !contextoUid) return [];
+  try{
+    const snap = await firebaseDb.collection("campanias").doc(contextoUid).collection("historial")
+      .orderBy("actualizado","desc").limit(20).get();
+    return snap.docs.map(d=>d.data());
+  }catch(e){ return []; }
+}
+
+async function cargarListaUsuarios(){
+  const cont = document.getElementById("listaUsuarios");
+  try{
+    const snap = await firebaseDb.collection("usuarios").orderBy("nombre").limit(200).get();
+    if(!cont) return;
+    const docs = snap.docs.filter(d=>d.id !== uid);
+    if(!docs.length){ cont.innerHTML = `<p class="empty">Todavía no hay otras campañas registradas.</p>`; return; }
+    cont.innerHTML = docs.map(d=>{
+      const u = d.data();
+      return `<div class="item">
+        <div class="lines"><strong>${esc(u.nombre || "Jugador sin nombre")}</strong></div>
+        <button class="btn tiny" data-act="ver-usuario" data-uid="${esc(d.id)}" data-nombre="${esc(u.nombre||"Jugador")}">Ver campaña</button>
+      </div>`;
+    }).join("");
+  }catch(e){
+    if(cont) cont.innerHTML = `<p class="empty">No se pudo cargar la lista de jugadores.</p>`;
+  }
+}
+
+/* ---------------- cabecera ---------------- */
+function pintarCabecera(){
+  const ct = document.getElementById("campTitle");
+  ct.value = S.campaign.titulo || "";
+  ct.readOnly = modoLectura;
+  document.getElementById("metaLine").textContent =
+    "Acto " + (S.campaign.acto||"—") + " · " + (S.campaign.zona||"Zona sin anotar") +
+    (S.chars.length ? " · Grupo nivel " + S.chars.map(c=>c.nivel).join(" / ") : "");
+
+  const b = document.getElementById("daysBadge");
+  const d = diasDesde(ultimaSesion());
+  if(d === null){ b.textContent = "Sin sesiones anotadas"; b.className = "badge"; }
+  else if(d <= 0){ b.textContent = "Jugaste hoy"; b.className = "badge"; }
+  else { b.textContent = d + (d===1?" día":" días") + " sin jugar"; b.className = "badge" + (d>=7?" warn":""); }
+
+  const ub = document.getElementById("userBadge");
+  if(ub){
+    ub.textContent = nombrePropio ? "👤 " + nombrePropio : "";
+    ub.hidden = !nombrePropio;
+  }
+
+  const cb = document.getElementById("cloudBadge");
+  if(cb){
+    if(modo === "claude"){ cb.textContent = "Guardado en claude.ai"; cb.className = "badge"; }
+    else if(modo === "firebase"){ cb.textContent = modoLectura ? "Solo lectura" : "Guardado en la nube"; cb.className = "badge"; }
+    else { cb.textContent = "Solo en este navegador"; cb.className = "badge warn"; }
+  }
+
+  const banner = document.getElementById("bannerLectura");
+  if(banner){
+    banner.hidden = !modoLectura;
+    if(modoLectura){
+      banner.innerHTML = `<span>Estás viendo la campaña de <strong>${esc(viendoNombre)}</strong> — no podés modificarla.</span>
+        <button class="btn tiny" data-act="volver-propia">Volver a la mía</button>`;
+    }
+  }
+
+  const header = document.querySelector("header.top");
+  if(header){
+    header.classList.toggle("con-banner", !!S.campaign.banner);
+    header.style.backgroundImage = S.campaign.banner ? `url(${S.campaign.banner})` : "";
+  }
+}
+
+function actualizarConfigModal(){
+  const cont = document.getElementById("configBody");
+  if(!cont || !S) return;
+  cont.innerHTML = `
+    <div class="field">
+      <label>Imagen de fondo (banner)</label>
+      <input type="file" accept="image/*" data-imgtype="banner">
+      <p class="mini" style="margin-top:4px">Se achica y comprime automáticamente al subirla.</p>
+      ${S.campaign.banner ? `<button class="btn tiny" data-act="quitar-banner" style="margin-top:6px">Quitar imagen</button>` : ""}
+    </div>`;
+}
+
+/* ---------------- pestañas ---------------- */
+const TABS = [
+  ["estado","Dónde estoy"],
+  ["grupo","El grupo"],
+  ["misiones","Misiones"],
+  ["decisiones","Decisiones"],
+  ["objetos","Objetos"],
+  ["bitacora","Bitácora"],
+  ["historial","Historial"],
+  ["campanias","Ver campañas"],
+  ["perfil","Perfil"]
+];
+
+function pintarTabs(){
+  document.getElementById("tabs").innerHTML = TABS.map(([k,t])=>
+    `<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${t}</button>`).join("");
+}
+
+/* ---------------- vistas ---------------- */
+function vistaEstado(){
+  const d = diasDesde(ultimaSesion());
+  const ult = S.log[0];
+  const misionesActivas = S.quests.filter(q=>q.estado==="activa");
+  const resumen = `
+    <section class="card hero">
+      <h2>Retomar la partida</h2>
+      <dl>
+        <dt>Acto</dt><dd>${esc(S.campaign.acto||"—")}</dd>
+        <dt>Zona</dt><dd>${esc(S.campaign.zona||"—")}</dd>
+        <dt>Objetivo actual</dt><dd>${esc(S.campaign.objetivo||"—")}</dd>
+        <dt>Próximo objetivo</dt><dd>${esc(S.campaign.proximo||"—")}</dd>
+        <dt>Misiones activas</dt><dd>${misionesActivas.length ? esc(misionesActivas.map(q=>q.titulo).join(" · ")) : "ninguna anotada"}</dd>
+        <dt>Grupo</dt><dd>${S.chars.length ? S.chars.map(c=>esc(c.nombre||"(sin nombre)")+" (n."+c.nivel+" "+esc(c.clase||"—")+")").join(" · ") : "sin personajes todavía"}</dd>
+        <dt>Última sesión</dt><dd>${ult ? esc(ult.fecha)+" — "+esc(ult.texto.slice(0,180)) : "sin anotar"}</dd>
+      </dl>
+      ${d!==null && d>=7 ? `<p class="mini" style="margin-top:10px">Pasó más de una semana: leé la última entrada de la bitácora antes de cargar la partida.</p>` : ""}
+      <div class="row wrap" style="margin-top:14px">
+        <button class="btn primary" data-act="gen-ia">Generar texto para retomar (IA)</button>
+      </div>
+      <textarea id="textoIAOut" readonly placeholder="Tocá el botón para generar el resumen que le vas a pasar a la IA." style="margin-top:10px; min-height:220px; font-family:monospace; font-size:.85rem"></textarea>
+    </section>`;
+
+  return resumen + `
+    <section class="card">
+      <h2>Estado de la campaña</h2>
+      <div class="grid2" style="margin-top:10px">
+        <div class="field"><label>Acto</label><input data-path="campaign.acto" value="${esc(S.campaign.acto)}"></div>
+        <div class="field"><label>Zona actual</label><input data-path="campaign.zona" value="${esc(S.campaign.zona)}"></div>
+      </div>
+      <div class="field"><label>Objetivo actual</label><input data-path="campaign.objetivo" value="${esc(S.campaign.objetivo)}"></div>
+      <div class="field"><label>Próximo objetivo</label><input data-path="campaign.proximo" value="${esc(S.campaign.proximo)}"></div>
+      <div class="field"><label>Notas sueltas</label><textarea data-path="campaign.notas" placeholder="Cosas que no quiero olvidar: cofres sin abrir, NPC pendientes, dónde dejé a alguien…">${esc(S.campaign.notas)}</textarea></div>
+    </section>
+    <section class="card">
+      <h3>Copia de seguridad</h3>
+      <p class="mini">Copiá este texto a un archivo si querés un respaldo, o pegá uno anterior para restaurar (por ejemplo, para migrar una campaña vieja a tu usuario nuevo).</p>
+      <div class="row wrap" style="margin:10px 0">
+        <button class="btn" data-act="copiar">Copiar mis datos</button>
+        <button class="btn" data-act="descargar" id="btnDescargar" hidden>Descargar copia</button>
+        <button class="btn ghost" data-act="restaurar">Restaurar desde texto</button>
+      </div>
+      <textarea id="backupBox" placeholder="Pegá acá una copia anterior y tocá Restaurar."></textarea>
+    </section>`;
+}
+
+function vistaGrupo(){
+  const header = `<div class="spread" style="margin-bottom:12px"><h2>El grupo</h2><button class="btn" data-act="add-char">Añadir personaje</button></div>`;
+  if(!S.chars.length){
+    return header + `<p class="empty">Todavía no creaste ningún personaje. Tocá "Añadir personaje" para empezar.</p>`;
+  }
+  return header + S.chars.map((c,i)=>`
+    <section class="card pc">
+      <header>
+        <div class="row" style="gap:12px; flex:1; align-items:flex-start">
+          <div class="pc-avatar-wrap" data-avatar-i="${i}">
+            ${c.imagen ? `<img src="${c.imagen}" alt="">` : ""}
+            <div class="pencil">✏️</div>
+            ${c.imagen ? `<button class="quitar-x" data-act="quitar-foto" data-i="${i}" aria-label="Quitar foto">✕</button>` : ""}
+            <input type="file" accept="image/*" data-imgtype="char" data-i="${i}" style="display:none">
+          </div>
+          <div style="flex:1; min-width:0">
+            <input class="who" data-path="chars.${i}.nombre" value="${esc(c.nombre)}" aria-label="Nombre" placeholder="Nombre del personaje">
+            <div class="role"><input data-path="chars.${i}.jugador" value="${esc(c.jugador)}" placeholder="Personaje propio / compañero reclutado…"></div>
+          </div>
+        </div>
+        <div class="row" style="gap:8px">
+          <div class="lvl">
+            <button data-act="lvl-" data-i="${i}" aria-label="Bajar nivel">−</button>
+            <span class="mini">nivel</span><b>${c.nivel}</b>
+            <button data-act="lvl+" data-i="${i}" aria-label="Subir nivel">+</button>
+          </div>
+          <button class="btn del" data-act="del-char" data-i="${i}" aria-label="Borrar personaje">✕</button>
+        </div>
+      </header>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label>Raza</label><input data-path="chars.${i}.raza" value="${esc(c.raza)}"></div>
+        <div class="field"><label>Clase</label><input data-path="chars.${i}.clase" value="${esc(c.clase)}"></div>
+      </div>
+      <div class="stats">
+        ${["fue","des","con","int","sab","car"].map(k=>`
+          <div class="stat">
+            <label>${k.toUpperCase()}</label>
+            <input type="number" min="1" max="30" data-path="chars.${i}.stats.${k}" value="${esc(c.stats[k])}">
+          </div>`).join("")}
+      </div>
+      <div class="field"><label>Objetos que le estoy buscando</label><textarea data-path="chars.${i}.buscar" placeholder="Objetos clave para esta build">${esc(c.buscar)}</textarea></div>
+    </section>`).join("");
+}
+
+function vistaMisiones(){
+  const grupos = ESTADOS_MISION.map(e=>{
+    const l = S.quests.filter(q=>q.estado===e);
+    if(!l.length) return "";
+    return `<h3 style="margin-top:14px">${e[0].toUpperCase()+e.slice(1)}</h3>` + l.map(q=>{
+      const i = S.quests.indexOf(q);
+      return `<div class="item">
+        <div class="lines">
+          <input class="${q.estado==='completada'?'strike':''}" data-path="quests.${i}.titulo" value="${esc(q.titulo)}">
+          <div class="sub">
+            <select data-path="quests.${i}.estado" data-rerender="1">${ESTADOS_MISION.map(s=>`<option ${s===q.estado?"selected":""}>${s}</option>`).join("")}</select>
+            <input data-path="quests.${i}.acto" value="${esc(q.acto)}" placeholder="Acto">
+            <input data-path="quests.${i}.nota" value="${esc(q.nota)}" placeholder="Dónde quedó / qué falta">
+          </div>
+        </div>
+        <button class="btn del" data-act="del-quest" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`;
+    }).join("");
+  }).join("");
+  return `<section class="card">
+    <div class="spread"><h2>Misiones</h2><button class="btn" data-act="add-quest">Añadir misión</button></div>
+    ${S.quests.length ? grupos : `<p class="empty">Sin misiones anotadas. Empezá por la que estés haciendo ahora.</p>`}
+  </section>`;
+}
+
+function vistaDecisiones(){
+  return `<section class="card">
+    <div class="spread"><h2>Decisiones importantes</h2><button class="btn" data-act="add-dec">Añadir decisión</button></div>
+    <p class="mini">Lo que elegiste y no querés olvidar: a quién salvaste, a quién mataste, con quién te peleaste, qué prometiste.</p>
+    ${S.decisions.length ? S.decisions.map((d,i)=>`
+      <div class="item">
+        <div class="lines">
+          <input data-path="decisions.${i}.texto" value="${esc(d.texto)}" placeholder="Qué decidí">
+          <div class="sub">
+            <input data-path="decisions.${i}.fecha" value="${esc(d.fecha)}" placeholder="Fecha">
+            <input data-path="decisions.${i}.consec" value="${esc(d.consec||"")}" placeholder="Consecuencia o pendiente">
+          </div>
+        </div>
+        <button class="btn del" data-act="del-dec" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`).join("") : `<p class="empty">Todavía no anotaste decisiones.</p>`}
+  </section>`;
+}
+
+function vistaObjetos(){
+  return `<section class="card">
+    <div class="spread"><h2>Objetos</h2><button class="btn" data-act="add-item">Añadir objeto</button></div>
+    <p class="mini">Marcá como <span class="tag keep">no vender</span> todo lo que sirva para una build futura.</p>
+    ${S.items.length ? S.items.map((o,i)=>`
+      <div class="item">
+        <div class="lines">
+          <input data-path="items.${i}.nombre" value="${esc(o.nombre)}" placeholder="Nombre del objeto">
+          <div class="sub">
+            <select data-path="items.${i}.estado" data-rerender="1">${ESTADOS_OBJETO.map(s=>`<option ${s===o.estado?"selected":""}>${s}</option>`).join("")}</select>
+            <select data-path="items.${i}.para">
+              <option value="">— para quién —</option>
+              ${S.chars.map(c=>`<option ${c.nombre===o.para?"selected":""}>${esc(c.nombre)}</option>`).join("")}
+              <option ${o.para==="campamento"?"selected":""}>campamento</option>
+            </select>
+            <input data-path="items.${i}.nota" value="${esc(o.nota)}" placeholder="Dónde está / por qué sirve">
+          </div>
+        </div>
+        <button class="btn del" data-act="del-item" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`).join("") : `<p class="empty">Sin objetos anotados. Anotá los que dudes si vender.</p>`}
+  </section>`;
+}
+
+function vistaBitacora(){
+  return `<section class="card">
+    <div class="spread"><h2>Bitácora de sesiones</h2><button class="btn primary" data-act="add-log">Nueva entrada</button></div>
+    <p class="mini">Al terminar de jugar, escribí tres líneas: dónde quedé, qué hice, qué iba a hacer después.</p>
+    ${S.log.length ? S.log.map((l,i)=>`
+      <div class="item" style="padding-top:14px">
+        <div class="lines">
+          <div class="sub"><input data-path="log.${i}.fecha" value="${esc(l.fecha)}" style="max-width:140px"></div>
+          <textarea data-path="log.${i}.texto" placeholder="Qué pasó esta sesión y dónde quedé guardado">${esc(l.texto)}</textarea>
+        </div>
+        <button class="btn del" data-act="del-log" data-i="${i}" aria-label="Borrar">✕</button>
+      </div>`).join("") : `<p class="empty">Todavía no hay entradas. La primera puede ser simplemente dónde arrancás.</p>`}
+  </section>`;
+}
+
+function vistaHistorial(){
+  if(modo !== "firebase"){
+    return `<section class="card"><h2>Historial</h2><p class="empty">El historial de cambios solo está disponible en la versión con cuentas de usuario (fuera de claude.ai).</p></section>`;
+  }
+  return `<section class="card">
+    <div class="spread"><h2>Historial de cambios${modoLectura ? " de "+esc(viendoNombre) : ""}</h2>
+    ${modoLectura ? "" : `<button class="btn tiny" data-act="vaciar-historial">Vaciar historial</button>`}</div>
+    <p class="mini">Últimas 20 modificaciones guardadas, con quién y cuándo.</p>
+    <div id="histList" class="mini" style="margin-top:10px">Cargando…</div>
+  </section>`;
+}
+
+function vistaCampanias(){
+  if(modo !== "firebase"){
+    return `<section class="card"><h2>Ver campañas</h2><p class="empty">Esta sección solo está disponible en la versión con cuentas de usuario (fuera de claude.ai).</p></section>`;
+  }
+  return `<section class="card">
+    <h2>Campañas de otros jugadores</h2>
+    <p class="mini">Elegí un usuario para ver su campaña. Vas a poder mirarla, no modificarla.</p>
+    <div id="listaUsuarios" class="mini" style="margin-top:10px">Cargando…</div>
+  </section>`;
+}
+
+function generarTextoIA(){
+  const c = S.campaign;
+  const grupo = S.chars.length
+    ? S.chars.map(ch => `${emojiClase(ch.clase)} ${ch.nombre||"(sin nombre)"} — nivel ${ch.nivel} — ${ch.clase||"—"}`).join("\n")
+    : "Sin personajes anotados";
+  const misiones = S.quests.filter(q=>q.estado!=="completada");
+  const misionesTxt = misiones.length
+    ? misiones.map(q=>`- ${q.titulo||"(sin título)"} — ${q.estado}${q.nota ? " — próximo paso: "+q.nota : ""}`).join("\n")
+    : "- Ninguna anotada";
+  const decisionesTxt = S.decisions.length
+    ? S.decisions.map(d=>`- ${d.texto}${d.consec ? " ("+d.consec+")" : ""}`).join("\n")
+    : "- Ninguna anotada";
+  const objetosTxt = S.items.length
+    ? S.items.filter(o=>o.estado!=="vendible").map(o=>`- ${o.nombre}${o.nota ? " — "+o.nota : ""}`).join("\n")
+    : "- Ninguno anotado";
+  const ultima = S.log[0] ? `${S.log[0].fecha} — ${S.log[0].texto}` : "Sin registrar.";
+  const pendientes = c.notas ? c.notas : "Nada anotado.";
+  const noOlvidar = S.items.filter(o=>o.estado==="no vender");
+  const noOlvidarTxt = noOlvidar.length
+    ? noOlvidar.map(o=>`- ${o.nombre}${o.nota ? " — "+o.nota : ""}`).join("\n")
+    : "Nada anotado.";
+
+  return `BALDUR'S GATE 3 — ESTADO DE CAMPAÑA
+
+ACTO: ${c.acto || "—"}
+ZONA: ${c.zona || "—"}
+
+OBJETIVO ACTUAL:
+${c.objetivo || "—"}
+
+PRÓXIMO OBJETIVO:
+${c.proximo || "—"}
+
+GRUPO:
+${grupo}
+
+MISIONES IMPORTANTES:
+${misionesTxt}
+
+DECISIONES:
+${decisionesTxt}
+
+OBJETOS IMPORTANTES:
+${objetosTxt}
+
+ÚLTIMA SESIÓN:
+${ultima}
+
+PENDIENTES:
+${pendientes}
+
+NO OLVIDAR:
+${noOlvidarTxt}`;
+}
+
+function vistaPerfil(){
+  if(modo !== "firebase"){
+    return `<section class="card"><h2>Perfil</h2><p class="empty">Disponible solo en la versión con cuentas de usuario (fuera de claude.ai).</p></section>`;
+  }
+  const user = firebaseAuth.currentUser;
+  const email = (user && user.email) || "—";
+  const verificado = user && user.emailVerified;
+  return `
+    <section class="card">
+      <h2>Tu perfil</h2>
+      <div class="field"><label>Email</label><input value="${esc(email)}" disabled></div>
+      <p class="mini">${verificado ? "Email verificado ✓" : "Email todavía no verificado."}</p>
+      ${verificado ? "" : `<button class="btn tiny" data-act="reenviar-verif" style="margin-top:6px">Reenviar email de verificación</button>`}
+    </section>
+    <section class="card">
+      <h3>Cambiar tu nombre</h3>
+      <p class="mini">Es el nombre que ven los demás en "Ver campañas".</p>
+      <form id="formNombre" class="row wrap" style="margin-top:10px; align-items:flex-end">
+        <div class="field" style="flex:1; min-width:180px; margin-bottom:0"><label>Nombre</label><input id="perfilNombre" value="${esc(nombrePropio)}" required></div>
+        <button class="btn primary" type="submit">Guardar</button>
+      </form>
+      <div class="login-ok" id="perfilNombreMsg"></div>
+    </section>
+    <section class="card">
+      <h3>Cambiar contraseña</h3>
+      <form id="formPass">
+        <div class="field"><label>Contraseña actual</label><input type="password" id="passActual" required></div>
+        <div class="field"><label>Contraseña nueva (mínimo 6 caracteres)</label><input type="password" id="passNueva" minlength="6" required></div>
+        <button class="btn primary" type="submit">Cambiar contraseña</button>
+      </form>
+      <div class="login-err" id="passErr"></div>
+      <div class="login-ok" id="passMsg"></div>
+    </section>
+    <section class="card">
+      <h3>Eliminar tu cuenta</h3>
+      <p class="mini">Borra tu campaña, tu perfil público y tu acceso. No se puede deshacer.</p>
+      <form id="formEliminar">
+        <div class="field"><label>Confirmá tu contraseña</label><input type="password" id="passEliminar" required></div>
+        <button class="btn" type="submit" style="border-color:var(--ember); color:var(--ember)">Eliminar mi cuenta</button>
+      </form>
+      <div class="login-err" id="eliminarErr"></div>
+    </section>`;
+}
+
+const VISTAS = {estado:vistaEstado, grupo:vistaGrupo, misiones:vistaMisiones, decisiones:vistaDecisiones, objetos:vistaObjetos, bitacora:vistaBitacora, historial:vistaHistorial, campanias:vistaCampanias, perfil:vistaPerfil};
+
+function render(){
+  pintarCabecera();
+  pintarTabs();
+  document.getElementById("view").innerHTML = VISTAS[tab]();
+  document.getElementById("appScreen").classList.toggle("solo-lectura", modoLectura);
+
+  if(tab==="estado" && window._descargasOk){
+    const bd = document.getElementById("btnDescargar"); if(bd) bd.hidden = false;
+  }
+  if(tab==="historial" && modo==="firebase"){
+    leerHistorial().then(lista=>{
+      const cont = document.getElementById("histList");
+      if(!cont) return;
+      if(!lista.length){ cont.innerHTML = `<p class="empty">Sin cambios registrados todavía.</p>`; return; }
+      cont.innerHTML = lista.map(h=>`
+        <div class="hist-row">
+          <span class="hist-when">${esc(new Date(h.actualizado).toLocaleString())}</span>
+          <span class="hist-who">${esc(h.autor||"—")}</span>
+          <span>${esc(h.resumen||"")}</span>
+        </div>`).join("");
+    });
+  }
+  if(tab==="campanias" && modo==="firebase"){
+    cargarListaUsuarios();
+  }
+  if(modoLectura){
+    document.querySelectorAll("#view input, #view textarea").forEach(el=>el.readOnly=true);
+    document.querySelectorAll("#view select").forEach(el=>el.disabled=true);
+  }
+  actualizarConfigModal();
+}
+
+/* ---------------- eventos de edición ---------------- */
+document.addEventListener("input", e=>{
+  if(modoLectura) return;
+  const t = e.target;
+  if(!t.dataset || !t.dataset.path) return;
+  const [obj, key] = porRuta(t.dataset.path);
+  obj[key] = t.value;
+  if(t.dataset.path.startsWith("campaign.")) pintarCabecera();
+  guardar();
+});
+
+document.addEventListener("change", e=>{
+  if(modoLectura) return;
+  const t = e.target;
+  if(t.type === "file" && t.dataset.imgtype){ manejarImagen(t); return; }
+  if(t.dataset && t.dataset.path && t.dataset.rerender) render();
+});
+
+document.addEventListener("click", e=>{
+  const wrap = e.target.closest(".pc-avatar-wrap");
+  if(wrap && !e.target.closest("button") && !modoLectura){
+    const inp = wrap.querySelector('input[type="file"]');
+    if(inp) inp.click();
+    return;
+  }
+
+  const b = e.target.closest("button"); if(!b) return;
+
+  if(b.dataset.tab){ tab = b.dataset.tab; render(); window.scrollTo({top:0}); return; }
+
+  const act = b.dataset.act;
+  if(!act) return;
+
+  if(act === "ver-usuario"){ verCampaniaDe(b.dataset.uid, b.dataset.nombre); return; }
+  if(act === "volver-propia"){ volverAMiCampania(); return; }
+  if(act === "reenviar-verif"){
+    firebaseAuth.currentUser.sendEmailVerification()
+      .then(()=>avisarGuardado("Verificación enviada"))
+      .catch(()=>avisarGuardado("No se pudo enviar"));
+    return;
+  }
+  if(act === "vaciar-historial"){
+    if(modoLectura) return;
+    if(!confirm("¿Borrar todo el historial de cambios? No se puede deshacer.")) return;
+    (async()=>{
+      try{
+        await vaciarHistorialPropio();
+        avisarGuardado("Historial vaciado");
+        render();
+      }catch(ex){ avisarGuardado("No se pudo vaciar el historial"); }
+    })();
+    return;
+  }
+  if(act === "gen-ia"){
+    const texto = generarTextoIA();
+    const ta = document.getElementById("textoIAOut");
+    if(ta) ta.value = texto;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(
+        ()=>avisarGuardado("Texto generado y copiado"),
+        ()=>avisarGuardado("Texto generado, copialo manualmente")
+      );
+    } else { avisarGuardado("Texto generado, copialo manualmente"); }
+    return;
+  }
+  if(act === "copiar"){
+    const txt = JSON.stringify(S);
+    navigator.clipboard.writeText(txt).then(()=>avisarGuardado("Copiado"),
+      ()=>{ const box=document.getElementById("backupBox"); box.value=txt; box.select(); });
+    return;
+  }
+  if(act === "descargar"){
+    (async()=>{
+      try{
+        const d = await claude.use("downloads");
+        if(!d) return;
+        await d.save({filename:"campania-bg3.json", data:JSON.stringify(S,null,2)});
+      }catch(err){}
+    })();
+    return;
+  }
+  if(act === "restaurar"){
+    const box = document.getElementById("backupBox");
+    try{
+      const datos = JSON.parse(box.value);
+      if(!datos.chars) throw new Error("formato");
+      S = datos; render(); guardar(); avisarGuardado("Datos restaurados");
+    }catch(err){ avisarGuardado("Ese texto no es una copia válida"); }
+    return;
+  }
+
+  if(modoLectura) return; // el resto son acciones de edición, bloqueadas al ver otra campaña
+
+  const i = +b.dataset.i, j = +b.dataset.j;
+  switch(act){
+    case "add-char": S.chars.push({id:nuevoId(), nombre:"", jugador:"", raza:"", clase:"", nivel:1, stats:{fue:10,des:10,con:10,int:10,sab:10,car:10}, buscar:""}); break;
+    case "del-char": S.chars.splice(i,1); break;
+    case "quitar-banner": S.campaign.banner = ""; break;
+    case "quitar-foto": S.chars[i].imagen = ""; break;
+    case "lvl+": if(S.chars[i].nivel < 12) S.chars[i].nivel++; break;
+    case "lvl-": if(S.chars[i].nivel > 1) S.chars[i].nivel--; break;
+    case "add-quest": S.quests.unshift({id:nuevoId(), titulo:"", estado:"activa", acto:S.campaign.acto, nota:""}); break;
+    case "del-quest": S.quests.splice(i,1); break;
+    case "add-dec": S.decisions.unshift({id:nuevoId(), texto:"", fecha:hoy(), consec:""}); break;
+    case "del-dec": S.decisions.splice(i,1); break;
+    case "add-item": S.items.unshift({id:nuevoId(), nombre:"", estado:"guardado", para:"", nota:""}); break;
+    case "del-item": S.items.splice(i,1); break;
+    case "add-log": S.log.unshift({id:nuevoId(), fecha:hoy(), texto:""}); break;
+    case "del-log": S.log.splice(i,1); break;
+    default: return;
+  }
+  render(); guardar();
+});
+
+document.getElementById("themeBtn").addEventListener("click", ()=>{
+  const cur = document.documentElement.getAttribute("data-theme");
+  const oscuro = cur ? cur==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", oscuro ? "light" : "dark");
+});
+
+document.getElementById("configBtn").addEventListener("click", ()=>{
+  if(modoLectura){ avisarGuardado("Estás viendo la campaña de otro jugador"); return; }
+  actualizarConfigModal();
+  document.getElementById("configModal").hidden = false;
+});
+document.getElementById("cerrarConfig").addEventListener("click", ()=>{
+  document.getElementById("configModal").hidden = true;
+});
+document.getElementById("configModal").addEventListener("click", e=>{
+  if(e.target.id === "configModal") document.getElementById("configModal").hidden = true;
+});
+
+(async()=>{
+  try{
+    const d = await claude.use("downloads");
+    if(d){ window._descargasOk = true; const b=document.getElementById("btnDescargar"); if(b) b.hidden=false; }
+  }catch(e){}
+})();
+
+/* ---------------- pantallas de acceso ---------------- */
+function mostrarApp(){
+  document.getElementById("loginScreen").hidden = true;
+  document.getElementById("verifyScreen").hidden = true;
+  document.getElementById("appScreen").hidden = false;
+  const lb = document.getElementById("logoutBtn");
+  if(lb) lb.hidden = (modo !== "firebase");
+  if(!S) S = JSON.parse(JSON.stringify(ESTADO_VACIO));
+  render();
+  if(modo !== "firebase") cargarInicial();
+}
+function mostrarLogin(){
+  document.getElementById("appScreen").hidden = true;
+  document.getElementById("verifyScreen").hidden = true;
+  document.getElementById("loginScreen").hidden = false;
+}
+function mostrarVerificacion(email){
+  document.getElementById("loginScreen").hidden = true;
+  document.getElementById("appScreen").hidden = true;
+  document.getElementById("verifyEmail").textContent = email || "";
+  document.getElementById("verifyMsg").textContent = "";
+  document.getElementById("verifyScreen").hidden = false;
+}
+
+async function continuarSesionVerificada(user){
+  uid = user.uid;
+  let nombre = user.displayName;
+  if(!nombre){
+    try{
+      const perfil = await firebaseDb.collection("usuarios").doc(uid).get();
+      if(perfil.exists && perfil.data().nombre) nombre = perfil.data().nombre;
+    }catch(err){}
+  }
+  if(!nombre) nombre = (user.email||"Jugador").split("@")[0];
+  nombrePropio = nombre;
+  try{ await firebaseDb.collection("usuarios").doc(uid).set({nombre, nombreLower:normalizarNombre(nombre), creado:new Date().toISOString()}, {merge:true}); }catch(err){}
+  try{
+    const nombreLower = normalizarNombre(nombre);
+    const reserva = await firebaseDb.collection("nombres").doc(nombreLower).get();
+    if(!reserva.exists){ await firebaseDb.collection("nombres").doc(nombreLower).set({uid}); }
+  }catch(err){}
+  await cargarPropia();
+  mostrarApp();
+}
+
+let modoAuth = "login";
+document.getElementById("toggleAuth").addEventListener("click", e=>{
+  e.preventDefault();
+  modoAuth = modoAuth === "login" ? "signup" : "login";
+  document.getElementById("loginForm").hidden = modoAuth !== "login";
+  document.getElementById("signupForm").hidden = modoAuth !== "signup";
+  document.getElementById("authTitle").textContent = modoAuth === "login" ? "Iniciar sesión" : "Crear cuenta";
+  document.getElementById("toggleAuth").textContent = modoAuth === "login" ? "¿No tenés cuenta? Registrate" : "¿Ya tenés cuenta? Iniciá sesión";
+  document.getElementById("loginErr").textContent = "";
+  document.getElementById("loginOk").textContent = "";
+});
+
+document.getElementById("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const err = document.getElementById("loginErr");
+  err.textContent = "";
+  document.getElementById("loginOk").textContent = "";
+  try{ await firebaseAuth.signInWithEmailAndPassword(email, pass); }
+  catch(ex){ err.textContent = traducirErrorAuth(ex); }
+});
+
+document.getElementById("signupForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const nombre = document.getElementById("signupNombre").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const pass = document.getElementById("signupPass").value;
+  const err = document.getElementById("loginErr");
+  const ok = document.getElementById("loginOk");
+  err.textContent = ""; ok.textContent = "";
+  if(!nombre){ err.textContent = "Poné un nombre para tu perfil."; return; }
+  const nombreLower = normalizarNombre(nombre);
+
+  registrandose = true;
+  try{
+    const yaExiste = await firebaseDb.collection("nombres").doc(nombreLower).get();
+    if(yaExiste.exists){
+      err.textContent = "Ese nombre de usuario ya está en uso. Elegí otro.";
+      registrandose = false;
+      return;
+    }
+
+    const cred = await firebaseAuth.createUserWithEmailAndPassword(email, pass);
+
+    try{
+      await firebaseDb.collection("nombres").doc(nombreLower).set({uid: cred.user.uid});
+    }catch(exNombre){
+      // alguien lo tomó justo antes: deshacemos la cuenta recién creada
+      try{ await cred.user.delete(); }catch(e2){}
+      err.textContent = "Ese nombre se acaba de ocupar. Elegí otro.";
+      registrandose = false;
+      return;
+    }
+
+    await cred.user.updateProfile({displayName: nombre});
+    try{ await cred.user.sendEmailVerification(); }catch(ev){}
+    await firebaseDb.collection("usuarios").doc(cred.user.uid).set({nombre, nombreLower, creado:new Date().toISOString()});
+    await firebaseDb.collection("campanias").doc(cred.user.uid).set({json: JSON.stringify(ESTADO_VACIO), actualizado:new Date().toISOString()});
+    await firebaseAuth.signOut();
+
+    document.getElementById("signupForm").reset();
+    document.getElementById("signupForm").hidden = true;
+    document.getElementById("loginForm").hidden = false;
+    document.getElementById("authTitle").textContent = "Iniciar sesión";
+    document.getElementById("toggleAuth").textContent = "¿No tenés cuenta? Registrate";
+    modoAuth = "login";
+    ok.textContent = "Cuenta creada correctamente. Ya podés iniciar sesión.";
+  }catch(ex){
+    err.textContent = traducirErrorAuth(ex);
+  }finally{
+    registrandose = false;
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{
+  try{ await firebaseAuth.signOut(); }catch(e){}
+});
+
+document.getElementById("btnYaVerifique").addEventListener("click", async ()=>{
+  const msg = document.getElementById("verifyMsg");
+  msg.textContent = "";
+  try{
+    await firebaseAuth.currentUser.reload();
+    if(firebaseAuth.currentUser.emailVerified){ await continuarSesionVerificada(firebaseAuth.currentUser); }
+    else{ msg.textContent = "Todavía no lo verificaste. Revisá tu bandeja (y la carpeta de spam)."; }
+  }catch(ex){ msg.textContent = "No se pudo comprobar. Intentá de nuevo."; }
+});
+
+document.getElementById("btnReenviarVerif").addEventListener("click", async ()=>{
+  const msg = document.getElementById("verifyMsg");
+  try{ await firebaseAuth.currentUser.sendEmailVerification(); msg.textContent = "Te reenviamos el email."; }
+  catch(ex){ msg.textContent = "No se pudo reenviar. Esperá un minuto e intentá de nuevo."; }
+});
+
+document.getElementById("btnSalirVerif").addEventListener("click", async e=>{
+  e.preventDefault();
+  try{ await firebaseAuth.signOut(); }catch(err){}
+});
+
+document.addEventListener("submit", async e=>{
+  if(e.target.id === "formNombre"){
+    e.preventDefault();
+    const val = document.getElementById("perfilNombre").value.trim();
+    const msg = document.getElementById("perfilNombreMsg");
+    if(!val) return;
+    const nuevoLower = normalizarNombre(val);
+    const anteriorLower = normalizarNombre(nombrePropio);
+    try{
+      if(nuevoLower !== anteriorLower){
+        const ocupado = await firebaseDb.collection("nombres").doc(nuevoLower).get();
+        if(ocupado.exists){ msg.textContent = "Ese nombre ya está en uso."; return; }
+        await firebaseDb.collection("nombres").doc(nuevoLower).set({uid});
+        try{ await firebaseDb.collection("nombres").doc(anteriorLower).delete(); }catch(e){}
+      }
+      await firebaseAuth.currentUser.updateProfile({displayName: val});
+      await firebaseDb.collection("usuarios").doc(uid).set({nombre:val, nombreLower:nuevoLower}, {merge:true});
+      nombrePropio = val;
+      const ub = document.getElementById("userBadge");
+      if(ub){ ub.textContent = "👤 " + nombrePropio; ub.hidden = !nombrePropio; }
+      msg.textContent = "Nombre actualizado.";
+    }catch(ex){ msg.textContent = "No se pudo actualizar."; }
+    return;
+  }
+  if(e.target.id === "formPass"){
+    e.preventDefault();
+    const actual = document.getElementById("passActual").value;
+    const nueva = document.getElementById("passNueva").value;
+    const err = document.getElementById("passErr");
+    const msg = document.getElementById("passMsg");
+    err.textContent = ""; msg.textContent = "";
+    try{
+      const credencial = firebase.auth.EmailAuthProvider.credential(firebaseAuth.currentUser.email, actual);
+      await firebaseAuth.currentUser.reauthenticateWithCredential(credencial);
+      await firebaseAuth.currentUser.updatePassword(nueva);
+      msg.textContent = "Contraseña actualizada.";
+      document.getElementById("formPass").reset();
+    }catch(ex){
+      const code = (ex && ex.code) || "";
+      if(code.includes("wrong-password") || code.includes("invalid-credential")) err.textContent = "La contraseña actual no es correcta.";
+      else if(code.includes("weak-password")) err.textContent = "La nueva contraseña debe tener al menos 6 caracteres.";
+      else if(code.includes("requires-recent-login")) err.textContent = "Por seguridad, cerrá sesión, volvé a entrar e intentá de nuevo.";
+      else err.textContent = "No se pudo cambiar la contraseña.";
+    }
+    return;
+  }
+  if(e.target.id === "formEliminar"){
+    e.preventDefault();
+    const pass = document.getElementById("passEliminar").value;
+    const err = document.getElementById("eliminarErr");
+    err.textContent = "";
+    if(!confirm("¿Seguro que querés eliminar tu cuenta y tu campaña? Esta acción no se puede deshacer.")) return;
+    try{
+      const credencial = firebase.auth.EmailAuthProvider.credential(firebaseAuth.currentUser.email, pass);
+      await firebaseAuth.currentUser.reauthenticateWithCredential(credencial);
+
+      const nombreLower = normalizarNombre(nombrePropio);
+      try{
+        const hist = await firebaseDb.collection("campanias").doc(uid).collection("historial").get();
+        const batch = firebaseDb.batch();
+        hist.docs.forEach(d=>batch.delete(d.ref));
+        await batch.commit();
+      }catch(e){}
+      try{ await firebaseDb.collection("campanias").doc(uid).delete(); }catch(e){}
+      try{ await firebaseDb.collection("usuarios").doc(uid).delete(); }catch(e){}
+      try{ await firebaseDb.collection("nombres").doc(nombreLower).delete(); }catch(e){}
+      try{ localStorage.removeItem(CLAVE+":"+uid); }catch(e){}
+      await firebaseAuth.currentUser.delete();
+      // onAuthStateChanged se dispara solo y muestra el login
+    }catch(ex){
+      const code = (ex && ex.code) || "";
+      if(code.includes("wrong-password") || code.includes("invalid-credential")) err.textContent = "La contraseña no es correcta.";
+      else if(code.includes("requires-recent-login")) err.textContent = "Por seguridad, cerrá sesión, volvé a entrar e intentá de nuevo.";
+      else err.textContent = "No se pudo eliminar la cuenta.";
+    }
+    return;
+  }
+});
+
+(async function arrancar(){
+  try{
+    const d = await claude.use("db");
+    if(d){ claudeDb = d; modo = "claude"; mostrarApp(); return; }
+  }catch(e){}
+
+  if(iniciarFirebase()){
+    modo = "firebase";
+    firebaseAuth.onAuthStateChanged(async user=>{
+      if(registrandose) return; // en medio del registro; ese flujo se maneja aparte
+      if(user){
+        if(!user.emailVerified){ mostrarVerificacion(user.email); return; }
+        await continuarSesionVerificada(user);
+      } else {
+        uid = null; S = null; misDatos = null; modoLectura = false;
+        mostrarLogin();
+      }
+    });
+    return;
+  }
+
+  modo = "local";
+  mostrarApp();
+})();
+})();
+</script>
+</body>
+</html>
